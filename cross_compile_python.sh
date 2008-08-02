@@ -22,11 +22,11 @@ patch -p1 <../python_2.5.2.patch
 
 autoconf
 
-
-export PATH=$DEVKITPPC/bin:$PATH
-export CC=powerpc-gekko-gcc
-export CXX=powerpc-gekko-g++
-export MACHDEP=unknown
+. ../source_me.sh
 
 ./configure --disable-shared --without-threads --disable-ipv6 --host=powerpc-gekko
-make HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen CROSS_COMPILE=yes
+make HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen CROSS_COMPILE=yes libpython2.5.a
+
+cd ../wiipy/
+./autogen.sh
+make
