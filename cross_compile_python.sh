@@ -27,6 +27,9 @@ autoconf
 ./configure --disable-shared --without-threads --disable-ipv6 --host=powerpc-gekko
 make HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen CROSS_COMPILE=yes libpython2.5.a
 
+cd ../PyOGC/
+make
+
 cd ../wiipy/
 ./autogen.sh
-make
+make -e

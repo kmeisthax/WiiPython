@@ -13,8 +13,9 @@ INCL=	-I../Python-2.5.2/Include -I../Python-2.5.2/ -I$(DEVKITPRO)/libogc/gc
 LIB =	-L$(DEVKITPRO)/libogc/lib/wii -L../Python-2.5.2 -logc -lm -lpython2.5 -lfat -lm -logc
 
 PYOGCOBJ = ogc/ogc.o ogc/pad.o ogc/audio.o ogc/video.o \
-           ogc/lwp.o
+           ogc/lwp.o ogc/net.o
 DEMOOBJ = demo.o hello.o
+
 
 all:	demo.elf
 	powerpc-gekko-objcopy -O binary demo.elf demo.dol
