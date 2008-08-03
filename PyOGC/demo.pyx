@@ -42,6 +42,10 @@ cdef public int main(int argc, char **argv):
 	try:
 		Main()
 	except Exception, e:
+		xfb = ogc.Init(numFBs=1)[0]
+		ogc.video.SetNextFramebuffer(xfb)
+		ogc.video.Flush()
+		print '\n\n\n\n'
 		print 'Caught exception', e, 'in Main'
 		print 'Press Z to return to loader'
 		pad = ogc.pad.PAD(0)
@@ -62,13 +66,14 @@ def Main():
 	print
 	
 	
-	# Creating a PAD objects for each pad
-	pads = ogc.pad.PAD(0), ogc.pad.PAD(1), ogc.pad.PAD(2), ogc.pad.PAD(3)
+	# Creating PAD and WPAD objects for each pad
+	pads  = ogc.pad.PAD(0), ogc.pad.PAD(1), ogc.pad.PAD(2), ogc.pad.PAD(3)
+	wpads = ogc.wpad.WPAD(0), ogc.wpad.WPAD(1), ogc.wpad.WPAD(2), ogc.wpad.WPAD(3)
 	
 	# Print a list of plugged in controllers
 	print 'Controllers plugged in:',
 	for i in range(4):
-		if pads[i]['Error'] != ogc.pad.ERR_NO_CONTROLLER:
+		if pads[i]['Error'] == ogc.pad.ERR_NONE:
 			print i,
 	print
 	
@@ -85,6 +90,14 @@ def Main():
 	lastPads = [pads[0]._dict, pads[1]._dict, pads[2]._dict, pads[3]._dict]
 	while True:
 		for i in range(4):
+			# Wiimote Demo
+			if wpads[i]['A']:
+				ogc.video.SetNextFramebuffer(xfb[1])
+				ogc.video.Flush()
+				wiimoteDemo(wpads[i], xfb[1])
+				ogc.video.SetNextFramebuffer(xfb[0])
+				ogc.video.Flush()
+			
 			# Only execute commands when pads have changed
 			changed = False
 			for b in ogc.pad.buttons:
@@ -212,4 +225,39 @@ def playSnake(pad, fb):
 	fb.clear(ogc.video.COLOR_RED)
 	for i in range(30): ogc.video.WaitVSync()
 
+def wiimoteDemo(wpad, fb):
+	import ogc
+	import _struct
+	pxlpr = _struct.Struct('L')
+	fbuffer = fb.get_buffer()
+	fb.clear(ogc.video.COLOR_WHITE)
+	# Enable IR reporting
+	wpad.SetDataFormat(ir=True)
+	# Create an empty 'image' which will populated by x,y coords
+	image = []
+	
+	while True:
+		# Handle input
+		x, y = wpad['IR']
+		if wpad['Home']: break
+		if wpad['A'] and x < 320 and y < 640 and x >= 0 and y >= 0:
+			image.append( (x,y) )
+		
+		# Actually draw everything
+		fb.clear(ogc.video.COLOR_WHITE)
+		try:
+			# Draw all the black
+			for i,j in image:
+				pxlpr.pack_into(fbuffer, 2*640*j+4*i, ogc.video.COLOR_BLACK)
+			# Draw the pointer
+			pxlpr.pack_into(fbuffer, 2*640*y    +4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*(y-1)+4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*     +4*(x-1), ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*(y+1)+4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*y    +4*(x+1), ogc.video.COLOR_RED)
+		except:
+			pass
+		ogc.video.WaitVSync()
+	# Play nicely and turn off acc/ir when not in use
+	wpad.SetDataFormat(False, False)
 

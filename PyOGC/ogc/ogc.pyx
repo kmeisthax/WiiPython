@@ -16,7 +16,7 @@ cdef extern int net_init()
 #   PAD <DONE>
 #   Framebuffer video support <Partially Implemented>
 #   SDCARD <Wow! That was easy: DONE>
-#   WPAD
+#   WPAD <Partially Implemented>
 #   AUDIO <Partially Implemented>
 #   GX
 #   Threading (LWP) <Almost there>
@@ -59,8 +59,8 @@ def Init(console=True, mode=None, numFBs=2, initFat=True):
 		video.ConsoleInit(xfbs[0])
 	# Set the next framebuffer
 	video.SetNextFramebuffer(xfbs[0])
-	# Important: you must call this to use pad module
-	video.SetPostRetraceCallback(pad.SetReadFlag)
+	# Important: you must call this to use pad/wpad
+	video.SetPostRetraceCallback(incVICount)
 	# We don't want VI to black on VI, flush settings
 	video.SetBlack(False)
 	video.Flush()

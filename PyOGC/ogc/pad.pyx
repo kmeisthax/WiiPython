@@ -45,14 +45,10 @@ ERR_TRANSFER      =	-3
 PAD_Init()
 
 cdef PADStatus pads[4]
-cdef int _need2read 
-cdef int _lastUpdate
-_need2read = 1
+cdef extern int _VICount
+cdef int _myVICount, _lastUpdate
+_myVICount = -1
 _lastUpdate = 0
-
-def SetReadFlag():
-	global _need2read
-	_need2read = 1
 
 class PAD:
 	"""
@@ -64,11 +60,11 @@ class PAD:
 		self.padNum = padNum
 		self.lastUpdate = -1
 	def __getitem__(self, b):
-		global _need2read, _lastUpdate, pads
-		if _need2read:
+		global _VICount, _myVICount, _lastUpdate, pads
+		if _myVICount != _VICount:
 			PAD_Read(pads)
-			_need2read = 0
-			_lastUpdate = _lastUpdate+1
+			_myVICount = _VICount
+			_lastUpdate += 1
 		
 		if self.lastUpdate != _lastUpdate:
 			self._update()
