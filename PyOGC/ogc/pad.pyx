@@ -64,7 +64,7 @@ class PAD:
 		if _myVICount != _VICount:
 			PAD_Read(pads)
 			_myVICount = _VICount
-			_lastUpdate += 1
+			_lastUpdate = _lastUpdate + 1
 		
 		if self.lastUpdate != _lastUpdate:
 			self._update()

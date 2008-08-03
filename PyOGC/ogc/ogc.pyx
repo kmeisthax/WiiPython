@@ -45,8 +45,11 @@ import pad
 import wpad
 import audio
 import lwp
-
+xfbs = None
 def Init(console=True, mode=None, numFBs=2, initFat=True):
+	global xfbs
+	if xfbs != None:
+		return xfbs
 	# Configure video mode
 	video.Configure(mode)
 	# Allocate framebuffers

@@ -56,7 +56,7 @@ cdef extern from "wiiuse/wpad.h":
     void WPAD_Init()
     void WPAD_Shutdown()
     void WPAD_Disconnect(int chan)
-    void WPAD_Read(int chan, WPADData*)
+    void WPAD_ReadEvent(int chan, WPADData*)
     void WPAD_SetDataFormat(int chan, int fmt)
     # TODO: More prototypes as I need them
 
@@ -154,7 +154,7 @@ class WPAD:
     
     def _update(self):
         cdef WPADData wpad
-        WPAD_Read(self.padNum, &wpad)
+        WPAD_ReadEvent(self.padNum, &wpad)
         self._dict = { 'Up'    : wpad.btns_d & BUTTON_UP,
                        'Down'  : wpad.btns_d & BUTTON_DOWN,
                        'Left'  : wpad.btns_d & BUTTON_LEFT,

@@ -12,7 +12,7 @@ def loop(buttons,pads,lastPads):
         print "press %s to %s" % (button,function[0])
     while True:
             for i in range(4):
-            	lastPads[i] = pads[i].update()
+            	pads[i].update()
             	lastPads[i] = pads[i]._dict
                 for button, function in buttons.iteritems():
                     if pads[i][button]:
@@ -29,13 +29,13 @@ def rumble_start(pad):
 	pad.rumble_start()
 def rumble_stop(pad):
 	pad.rumble_stop()
-def playSnake(pad, fb):
-	ogc.video.SetNextFramebuffer(fb[1])
-	ogc.video.Flush()
-	ogc.video.SetNextFramebuffer(fb[0])
-	ogc.video.Flush()
+def playSnake(pad):
 	import ogc
 	import _struct
+        global xfb
+        fb = xfb
+        ogc.video.SetNextFramebuffer(fb[1])
+	ogc.video.Flush()
 	pxlpr = _struct.Struct('L')
 	fbuffer = fb.get_buffer()
 	fb.clear(ogc.video.COLOR_SKYBLUE)
@@ -91,6 +91,8 @@ def playSnake(pad, fb):
 		
 		fb.clear(ogc.video.COLOR_RED)
 		for i in range(30): ogc.video.WaitVSync()
+	ogc.video.SetNextFramebuffer(fb[0])
+	ogc.video.Flush()
 def sd_start(pad):
 	print 'Opening pyogc.txt to write...'
 	try:
@@ -101,6 +103,48 @@ def sd_start(pad):
 		print 'The file says:', open('pyogc.txt').read()
 	except:
 		print 'Exception accessing file! Do you have an SD card in?'
+
+def wiimoteDemo(wpad):
+	import ogc
+	import _struct
+        global xfb
+        ogc.video.SetNextFramebuffer(xfb[1])
+        ogc.video.Flush()
+        fb = xfb[1]
+	pxlpr = _struct.Struct('L')
+	fbuffer = fb.get_buffer()
+	fb.clear(ogc.video.COLOR_WHITE)
+	# Enable IR reporting
+	wpad.SetDataFormat(ir=True)
+	# Create an empty 'image' which will populated by x,y coords
+	image = []
+	
+	while True:
+		# Handle input
+		x, y = wpad['IR']
+		if wpad['+']: break
+		if wpad['A'] and x < 320 and y < 640 and x >= 0 and y >= 0:
+			image.append( (x,y) )
+		
+		# Actually draw everything
+		fb.clear(ogc.video.COLOR_WHITE)
+		try:
+			# Draw all the black
+			for i,j in image:
+				pxlpr.pack_into(fbuffer, 2*640*j+4*i, ogc.video.COLOR_BLACK)
+			# Draw the pointer
+			pxlpr.pack_into(fbuffer, 2*640*y    +4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*(y-1)+4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*     +4*(x-1), ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*(y+1)+4*x,     ogc.video.COLOR_RED)
+			pxlpr.pack_into(fbuffer, 2*640*y    +4*(x+1), ogc.video.COLOR_RED)
+		except:
+			pass
+		ogc.video.WaitVSync()
+	# Play nicely and turn off acc/ir when not in use
+	wpad.SetDataFormat(False, False)
+        ogc.video.SetNextFramebuffer(xfb[0])
+        ogc.video.Flush()
 
 # Initialize libogc
 xfb = ogc.Init()
@@ -118,7 +162,8 @@ lastPads = [pads[0]._dict, pads[1]._dict, pads[2]._dict, pads[3]._dict]
 buttons={
 'A': ['Rumbles Controller',rumble_start],
 'B': ['Stops Rumbling',rumble_stop],
-'+': ['Play Snake',playSnake,xfb[1]],
+#'+': ['Play Snake',playSnake,xfb[1]],  # for some reason, snake makes ogc crash..
+'-': ['wiimote demo',wiimoteDemo],
 '1': ['Threading Demo',thread_start],
 '2': ['SD Demo',sd_start]
 }

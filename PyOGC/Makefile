@@ -13,7 +13,7 @@ INCL=	-I../Python-2.5.2/Include -I../Python-2.5.2/ -I$(DEVKITPRO)/libogc/gc
 LIB =	-L$(DEVKITPRO)/libogc/lib/wii -L../Python-2.5.2 -logc -lm -lpython2.5 -lfat -lm -logc
 
 PYOGCOBJ = ogc/ogc.o ogc/pad.o ogc/audio.o ogc/video.o \
-           ogc/lwp.o ogc/net.o ogc/wpad.o
+           ogc/lwp.o ogc/net.o ogc/wpad.o ogc/vicount.o
 DEMOOBJ = demo.o hello.o
 
 pyogc.o:  $(PYOGCOBJ) 
