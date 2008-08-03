@@ -1,122 +1,175 @@
 """
-WPAD Subsystem (support for wiimote)
-currently, only buttons support.
+WPAD Subsystem
 """
 
 cdef extern from "wiiuse/wpad.h":
-	signed long WPAD_Init()
-	signed long WPAD_DroppedEvents(signed long chan)
-	signed long WPAD_Flush(signed long chan)
-	signed long WPAD_SetDataFormat(signed long chan, signed long fmt)
-	signed long WPAD_SetVRes(signed long chan,unsigned long xres,unsigned long yres)
-	signed long WPAD_GetStatus()
-	signed long WPAD_Probe(signed long chan,unsigned long *type)
-	signed long WPAD_Disconnect(signed long chan)
-	void WPAD_Shutdown()
-	void WPAD_SetIdleTimeout(unsigned long seconds)
-	signed long WPAD_ScanPads()
-	signed long WPAD_Rumble(signed long chan, int status)
-	signed long WPAD_SetIdleThresholds(signed long chan, signed long btns, signed long ir, signed long accel, signed long js)
-	unsigned long WPAD_ButtonsUp(int chan)
-	unsigned long WPAD_ButtonsDown(int chan)
-	unsigned long WPAD_ButtonsHeld(int chan)
+    ctypedef struct ir_dot_t:
+        pass
+    ctypedef struct ir_t:
+        ir_dot_t      dot[4]
+        unsigned char num_dots
+        int aspect
+        int pos
+        unsigned int vres[2]
+        int          offset[2]
+        int state
+        int ax
+        int ay
+        int x
+        int y
+        float distance
+        float z
+    
+    ctypedef struct vec3b_t:
+        unsigned char x, y, z
+    ctypedef struct orient_t:
+        float roll, pitch, yaw
+        float a_roll, a_pitch
+    ctypedef struct gforce_t:
+        float x, y, z
+    ctypedef struct joystick_t:
+        float ang, mag
+    
+    ctypedef struct nunchuk_t:
+        joystick_t js
+        orient_t   orient
+        gforce_t   gforce
+    
+    ctypedef struct expansion_t:
+        int type
+        
+        nunchuk_t nunchuk
+        # TODO: Other expansions
+        
+    ctypedef struct WPADData:
+        unsigned short err
+        unsigned short btns_d
+        unsigned short btns_h
+        unsigned short btns_r
+        unsigned short btns_l
+        ir_t        ir
+        vec3b_t     accel
+        orient_t    orient
+        gforce_t    gforce
+        expansion_t exp
+    
+    void WPAD_Init()
+    void WPAD_Shutdown()
+    void WPAD_Disconnect(int chan)
+    void WPAD_Read(int chan, WPADData*)
+    void WPAD_SetDataFormat(int chan, int fmt)
+    # TODO: More prototypes as I need them
 
-WPAD_CHAN_ALL = -1,
-WPAD_CHAN_0=0
-WPAD_CHAN_1=1
-WPAD_CHAN_2=2
-WPAD_CHAN_3=3
-WPAD_MAX_WIIMOTES=4
-											
-WPAD_BUTTON_2=							0x0001
-WPAD_BUTTON_1=							0x0002
-WPAD_BUTTON_B=							0x0004
-WPAD_BUTTON_A	=						0x0008
-WPAD_BUTTON_MINUS=						0x0010
-WPAD_BUTTON_HOME=						0x0080
-WPAD_BUTTON_LEFT=						0x0100
-WPAD_BUTTON_RIGHT=						0x0200
-WPAD_BUTTON_DOWN=						0x0400
-WPAD_BUTTON_UP=							0x0800
-WPAD_BUTTON_PLUS=						0x1000
-WPAD_BUTTON_UNKNOWN=						0x8000
-											
-WPAD_NUNCHUK_BUTTON_Z=					(0x0001<<16)
-WPAD_NUNCHUK_BUTTON_C=					(0x0002<<16)
-											
-WPAD_CLASSIC_BUTTON_UP=					(0x0001<<16)
-WPAD_CLASSIC_BUTTON_LEFT=				(0x0002<<16)
-WPAD_CLASSIC_BUTTON_ZR=					(0x0004<<16)
-WPAD_CLASSIC_BUTTON_X=					(0x0008<<16)
-WPAD_CLASSIC_BUTTON_A=					(0x0010<<16)
-WPAD_CLASSIC_BUTTON_Y=					(0x0020<<16)
-WPAD_CLASSIC_BUTTON_B=					(0x0040<<16)
-WPAD_CLASSIC_BUTTON_ZL=					(0x0080<<16)
-WPAD_CLASSIC_BUTTON_FULL_R=				(0x0200<<16)
-WPAD_CLASSIC_BUTTON_PLUS=				(0x0400<<16)
-WPAD_CLASSIC_BUTTON_HOME=				(0x0800<<16)
-WPAD_CLASSIC_BUTTON_MINUS=				(0x1000<<16)
-WPAD_CLASSIC_BUTTON_FULL_L=				(0x2000<<16)
-WPAD_CLASSIC_BUTTON_DOWN=				(0x4000<<16)
-WPAD_CLASSIC_BUTTON_RIGHT=				(0x8000<<16)
+cdef extern double sin(double)
+cdef extern double cos(double)
 
-WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP=		(0x0001<<16)
-WPAD_GUITAR_HERO_3_BUTTON_YELLOW=		(0x0008<<16)
-WPAD_GUITAR_HERO_3_BUTTON_GREEN=			(0x0010<<16)
-WPAD_GUITAR_HERO_3_BUTTON_BLUE=			(0x0020<<16)
-WPAD_GUITAR_HERO_3_BUTTON_RED=			(0x0040<<16)
-WPAD_GUITAR_HERO_3_BUTTON_ORANGE=		(0x0080<<16)
-WPAD_GUITAR_HERO_3_BUTTON_PLUS=			(0x0400<<16)
-WPAD_GUITAR_HERO_3_BUTTON_MINUS=			(0x1000<<16)
-WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN=	(0x4000<<16)
+BUTTON_2     = 0x0001
+BUTTON_1     = 0x0002
+BUTTON_B     = 0x0004
+BUTTON_A     = 0x0008
+BUTTON_MINUS = 0x0010
+BUTTON_HOME  = 0x0080
+BUTTON_LEFT  = 0x0100
+BUTTON_RIGHT = 0x0200
+BUTTON_DOWN  = 0x0400
+BUTTON_UP    = 0x0800
+BUTTON_PLUS  = 0x1000
 
+buttons = ['2', '1', 'B', 'A', '-', '+', 'Home',
+           'Left', 'Right', 'Down', 'Up']
 
-buttons = ['2', '1', 'B', 'A', '-','+','HOME','LEFT','RIGHT','DOWN','UP','PLUS','UNKNOWN']
+NUNCHUK_BUTTON_Z = 0x1 << 16
+NUNCHUK_BUTTON_C = 0x2 << 16
 
-ERR_NONE          =	 0
-ERR_NO_CONTROLLER =	-1
-ERR_NOT_READY     =	-2
-ERR_TRANSFER      =	-3
+FMT_CORE        = 0
+FMT_CORE_ACC    = 1
+FMT_CORE_ACC_IR = 2
 
+ERR_NONE          =  0
+ERR_NO_CONTROLLER = -1
+ERR_NOT_READY     = -2
+ERR_TRANSFER      = -3
 
-# Call PAD_Init whenever this module is inited
+EXP_NONE    = 0
+EXP_NUNCHUK = 1
+EXP_CLASSIC = 2
+EXP_GH3     = 3
+
 WPAD_Init()
 
+cdef extern int _VICount
+
+class Expansion:
+    type = 'None'
+    def __init__(self): self._dict = {}
+    def __getitem__(self, b): return self._dict[b]
+    def __setitem__(self, b, v): self._dict[b] = v
+
+class Nunchuk(Expansion):
+    type = 'Nunchuk'
+
+cdef object processJoystick(joystick_t* js):
+    cdef double angle
+    angle = 3.14159 * js[0].ang / 180.0
+    return ( js[0].mag * sin(angle), js[0].mag * cos(angle) )
+
+cdef object processExpansion(WPADData* wpad):
+    if wpad[0].exp.type == EXP_NUNCHUK:
+        exp = Nunchuk()
+        exp['C'] = wpad[0].btns_d & NUNCHUK_BUTTON_C
+        exp['Z'] = wpad[0].btns_d & NUNCHUK_BUTTON_Z
+        exp['GForce'] = ( wpad[0].exp.nunchuk.gforce.x,
+                          wpad[0].exp.nunchuk.gforce.y,
+                          wpad[0].exp.nunchuk.gforce.z )
+        exp['Orient'] = ( wpad[0].exp.nunchuk.orient.pitch,
+                          wpad[0].exp.nunchuk.orient.roll,
+                          wpad[0].exp.nunchuk.orient.yaw )
+        exp['Stick']  = processJoystick( &(wpad[0].exp.nunchuk.js) )
+        return exp
+    # TODO: Other expansions
+    else: return Expansion()
+
 class WPAD:
-	"""
-	WPAD class, let you get info from, and control a specific wii controller
-	Initialize the object with the channel number
-	Button/Stick states can be accessed by padObj['A'] or padObj['LStick']
-	"""
-	def __init__(self, chanNum):
-		self.chanNum = chanNum
-		self.buttons = 0
-		self.update()
-	def __getitem__(self, b):
-		return self._dict[b]
-	
-	def update(self):
-		WPAD_ScanPads();
-		# Called to update the pad state
-		self.buttons = WPAD_ButtonsDown(self.chanNum)
-		self._dict = { 'A'      : self.buttons & WPAD_BUTTON_A,
-			       'B'      : self.buttons & WPAD_BUTTON_B,
-			       '-'      : self.buttons & WPAD_BUTTON_MINUS,
-			       '+'      : self.buttons & WPAD_BUTTON_PLUS,
-			       'HOME'   : self.buttons & WPAD_BUTTON_HOME,
-			       '2'      : self.buttons & WPAD_BUTTON_2,
-			       '1'      : self.buttons & WPAD_BUTTON_2,
-			       'Up'     : self.buttons & WPAD_BUTTON_UP,
-			       'Down'   : self.buttons & WPAD_BUTTON_DOWN,
-			       'Left'   : self.buttons & WPAD_BUTTON_LEFT,
-			       'Right'  : self.buttons & WPAD_BUTTON_RIGHT
-			       }
-		
-	
-	def rumble_start(self):
-		WPAD_Rumble(self.chanNum, 1)
-	def rumble_stop(self):
-		WPAD_Rumble(self.chanNum, 0)
-	def rumble_stop_hard(self):
-		WPAD_Rumble(self.chanNum, 2)
+    """
+    TODO: Document me!
+    """
+    def __init__(self, padNum):
+        self.padNum = padNum
+        self._VICount = -1
+    def __getitem__(self, b):
+        global _VICount
+        if self._VICount != _VICount:
+            self._update()
+            self._VICount = _VICount
+        
+        return self._dict[b]
+    
+    def SetDataFormat(self, acc=False, ir=False):
+        if ir:
+            WPAD_SetDataFormat(self.padNum, FMT_CORE_ACC_IR)
+        elif acc:
+            WPAD_SetDataFormat(self.padNum, FMT_CORE_ACC)
+        else:
+            WPAD_SetDataFormat(self.padNum, FMT_CORE)
+    
+    def _update(self):
+        cdef WPADData wpad
+        WPAD_Read(self.padNum, &wpad)
+        self._dict = { 'Up'    : wpad.btns_d & BUTTON_UP,
+                       'Down'  : wpad.btns_d & BUTTON_DOWN,
+                       'Left'  : wpad.btns_d & BUTTON_LEFT,
+                       'Right' : wpad.btns_d & BUTTON_RIGHT,
+                       'A'     : wpad.btns_d & BUTTON_A,
+                       'B'     : wpad.btns_d & BUTTON_B,
+                       '1'     : wpad.btns_d & BUTTON_1,
+                       '2'     : wpad.btns_d & BUTTON_2,
+                       '+'     : wpad.btns_d & BUTTON_PLUS,
+                       '-'     : wpad.btns_d & BUTTON_MINUS,
+                       'Home'  : wpad.btns_d & BUTTON_HOME,
+                       'IR'    : ( wpad.ir.x, wpad.ir.y ),
+                       'GForce': ( wpad.gforce.x, wpad.gforce.y, wpad.gforce.z ),
+                       'Orient': ( wpad.orient.roll, wpad.orient.pitch, wpad.orient.yaw ),
+                       'Exp'   : processExpansion(&wpad),
+                       'Error' : wpad.err }
+    
 
