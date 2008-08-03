@@ -12,7 +12,7 @@ cdef extern from "ogc/lwp.h":
 	int LWP_ThreadIsSuspended(lwp_t)
 	lwp_t LWP_GetSelf()
 	void LWP_SetThreadPriority(lwp_t, unsigned int)
-	void LWP_YieldThread(lwp_t)
+	void LWP_YieldThread()
 	void LWP_Reschedule(unsigned int)
 	int LWP_JoinThread(lwp_t, void** return_value)
 	# TODO: Wrap lwpq as well
@@ -69,6 +69,8 @@ cdef class Thread:
 	def __repr__(self):
 		return '<lwp.Thread ' + str(self.handle) + '>'
 	
+	def yield_thread(self):
+		LWP_YieldThread()
 	def suspend(self):
 		return LWP_SuspendThread(self.handle)
 	def resume(self):
@@ -77,8 +79,6 @@ cdef class Thread:
 		return LWP_ThreadIsSuspended(self.handle) != 0
 	def set_priority(self, priority):
 		LWP_SetThreadPriority(self.handle, priority)
-	def yield(self):
-		LWP_YieldThread(self.handle)
 	def join(self):
 		cdef void* return_value
 		if LWP_JoinThread(self.handle, &return_value) < 0:

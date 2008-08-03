@@ -16,6 +16,8 @@ PYOGCOBJ = ogc/ogc.o ogc/pad.o ogc/audio.o ogc/video.o \
            ogc/lwp.o ogc/net.o ogc/wpad.o
 DEMOOBJ = demo.o hello.o
 
+pyogc.o:  $(PYOGCOBJ) 
+	powerpc-gekko-ld -r $(PYOGCOBJ) -o pyogc.o 
 
 all:	demo.elf
 	powerpc-gekko-objcopy -O binary demo.elf demo.dol

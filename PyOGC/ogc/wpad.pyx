@@ -91,23 +91,25 @@ class WPAD:
 	def __init__(self, chanNum):
 		self.chanNum = chanNum
 		self.buttons = 0
+		self.update()
 	def __getitem__(self, b):
 		return self._dict[b]
 	
 	def update(self):
+		WPAD_ScanPads();
 		# Called to update the pad state
-		self.buttons = WPAD_ButtonsDown(self.chan)
-		self._dict = { 'A'      : pad.button & WPAD_BUTTON_A,
-			       'B'      : pad.button & WPAD_BUTTON_B,
-			       '-'      : pad.button & WPAD_BUTTON_MINUS,
-			       '+'      : pad.button & WPAD_BUTTON_PLUS,
-			       'HOME'      : pad.button & WPAD_BUTTON_HOME,
-			       '2'  : pad.button & WPAD_BUTTON_2,
-			       '1'  : pad.button & WPAD_BUTTON_2,
-			       'Up'     : pad.button & WPAD_BUTTON_UP,
-			       'Down'   : pad.button & WPAD_BUTTON_DOWN,
-			       'Left'   : pad.button & WPAD_BUTTON_LEFT,
-			       'Right'  : pad.button & WPAD_BUTTON_RIGHT
+		self.buttons = WPAD_ButtonsDown(self.chanNum)
+		self._dict = { 'A'      : self.buttons & WPAD_BUTTON_A,
+			       'B'      : self.buttons & WPAD_BUTTON_B,
+			       '-'      : self.buttons & WPAD_BUTTON_MINUS,
+			       '+'      : self.buttons & WPAD_BUTTON_PLUS,
+			       'HOME'   : self.buttons & WPAD_BUTTON_HOME,
+			       '2'      : self.buttons & WPAD_BUTTON_2,
+			       '1'      : self.buttons & WPAD_BUTTON_2,
+			       'Up'     : self.buttons & WPAD_BUTTON_UP,
+			       'Down'   : self.buttons & WPAD_BUTTON_DOWN,
+			       'Left'   : self.buttons & WPAD_BUTTON_LEFT,
+			       'Right'  : self.buttons & WPAD_BUTTON_RIGHT
 			       }
 		
 	

@@ -27,13 +27,13 @@ def main():
     s.bind((gethostname(), port))
     s.listen(1)
     print "connect on your wii addr port",gethostname(),port
-    print "type your python program, followed by a '#END' line execute what we typed"
-    print "if you program begins with '#/<filename>', it will not be executed, but rather stored in FrontSD"
-    print "this is useful to populate your SDCard with python programs without ftpii or removing the sdcard"
     try:
         while not wiipy_done:
             conn, add= s.accept()
             request = ''
+            conn.send("type your python program, terminated by a '#END' line\n")
+            conn.send("if your program begins with '#/<filename>', it will not be executed, but rather stored in FrontSD\n")
+            conn.send("this is useful to populate your SDCard with python modules without ftpii or removing the sdcard\n")
             while 1:
                 data = conn.recv(BUFSIZE)
                 if not data :
@@ -59,7 +59,7 @@ def main():
                 try:
                     conn.send(reply)
                 except: pass
-            print reply
+                print reply
             conn.close()
     except:
         PORT+=1
@@ -80,18 +80,19 @@ def execute(request):
         sys.stdout = stdout
     return fakefile.getvalue()
 
-num_try = 0
-while not wiipy_done and num_try<10:
-    try:
-       net.init()
-    except:
-       print "failed to init network. retry.."
-    else:
+def telnetd():
+    num_try = 0
+    while not wiipy_done and num_try<10:
         try:
-            main()
+           net.init()
         except:
-            traceback.print_exc(100)
-            PORT+=1
-    num_try+=1
+           print "failed to init network. retry.."
+        else:
+            try:
+                main()
+            except:
+                traceback.print_exc(100)
+                PORT+=1
+        num_try+=1
             
 #END

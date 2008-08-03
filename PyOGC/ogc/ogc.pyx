@@ -7,6 +7,7 @@ cdef extern void initpad()
 cdef extern void initaudio()
 cdef extern void initlwp()
 cdef extern void initnet()
+cdef extern void initwpad()
 
 cdef extern void exit(int)
 cdef extern int  fatInitDefault()
@@ -31,6 +32,7 @@ cdef extern int net_init()
 # Init all modules
 initvideo()
 initpad()
+initwpad()
 initaudio()
 initlwp()
 initnet()
@@ -40,6 +42,7 @@ initnet()
 # Import all modules
 import video
 import pad
+import wpad
 import audio
 import lwp
 
